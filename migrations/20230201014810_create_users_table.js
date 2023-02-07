@@ -5,10 +5,7 @@ exports.up = function (knex) {
       table.string("username").notNullable().unique();
       table.string("email").notNullable().unique();
       table.string("password").notNullable();
-      table.string("location");
       table.string("avatar");
-      table.json("items_posted");
-      table.json("shopping_cart");
     })
     .createTable("items", (table) => {
       table.uuid("id").primary();

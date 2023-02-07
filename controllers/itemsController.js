@@ -1,37 +1,37 @@
 const { v4: uuid } = require("uuid");
 const knex = require("knex")(require("../knexfile"));
+const jwt = require("jsonwebtoken");
+const multer = require("multer");
 
-// const addItem = (req, res) => {
-//   const itemList = getItems();
-//   const user_id = req.params.id;
-//   console.log(req.body);
-//   const {
-//     item_name,
-//     quantity,
-//     price,
-//     expiry_date,
-//     description,
-//     images,
-//     category,
-//   } = req.body;
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./public/images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
 
-//   const newItem = {
-//     id: uuid(),
-//     user_id,
-//     item_name,
-//     quantity,
-//     price,
-//     expiry_date,
-//     description,
-//     images,
-//     category,
-//     status: "In stock",
-//   };
+const upload = multer({ storage: storage }).single("images");
 
-//   const newItemList = [...itemList, newItem];
-//   fs.writeFileSync("./data/itemsData.json", JSON.stringify(newItemList));
-//   res.status(201).json(newItemList);
-// };
+const checkJwt = (req, res, next) => {
+  const token = req.headers.authorization.split(" ")[1];
+  if (token === "null") {
+    req.payload = "";
+    next();
+    return;
+  }
+
+  jwt.verify(token, "secretkey", (err, decoded) => {
+    if (err) {
+      return res.status(403).send("token not valid");
+    } else {
+      req.payload = decoded;
+    }
+  });
+
+  next();
+};
 
 const searchItem = async (req, res) => {
   const query = req.query.search;
@@ -54,4 +54,55 @@ const getOneItem = async (req, res) => {
     res.status(200).json(item);
   } else res.status(404).send("Item not found");
 };
-module.exports = { searchItem, getOneItem };
+
+const uploadItem = async (req, res) => {
+  const newItem = {
+    ...JSON.parse(req.body.newItem),
+    id: uuid(),
+    user_id: req.payload.id,
+    images: req.file.filename,
+    status: "In stock",
+    price: +JSON.parse(req.body.newItem).price,
+  };
+  await knex("items").insert(newItem);
+  res.status(201).json({ newItemId: newItem.id });
+};
+
+const updateItem = async (req, res) => {
+  const updatedItem = JSON.parse(req.body.updatedItem);
+  delete updatedItem.username;
+  if (updatedItem.expiry_date) {
+    updatedItem.expiry_date = updatedItem.expiry_date.slice(0, 10);
+  }
+  if (req.payload.id !== updatedItem.user_id) {
+    res.status(403).send("Unauthorized Edit");
+  }
+  if (req.file) {
+    updatedItem.images = req.file.filename;
+  }
+
+  await knex("items").where({ id: updatedItem.id }).update(updatedItem);
+  res.status(201).json({ id: updatedItem.id });
+};
+
+const deleteItem = async (req, res) => {
+  console.log(req.payload.id);
+  console.log(req.params);
+
+  const item = await knex("items").where({ id: req.params.itemId });
+  if (item[0].user_id !== req.payload.id) {
+    res.status(403).send("Unauthorized delete");
+  }
+  await knex("items").where({ id: req.params.itemId }).del();
+  res.status(204).send("Successfullt deleted item");
+};
+
+module.exports = {
+  searchItem,
+  getOneItem,
+  uploadItem,
+  checkJwt,
+  upload,
+  updateItem,
+  deleteItem,
+};

@@ -20,7 +20,8 @@ exports.seed = async function (knex) {
       quantity: 2,
       price: 25,
       expiry_date: "2023-03-30",
-      description: "Nike hoodies got 70% off for 3, sharing 2 of them",
+      description:
+        "Nike hoodies got 70% off for 3 until 30 March, sharing 2 of them",
       images: "hoodie.jpg",
       status: "In stock",
       category: "Apparel",

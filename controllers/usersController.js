@@ -2,6 +2,18 @@ const fs = require("fs");
 const knex = require("knex")(require("../knexfile"));
 const { v4: uuid } = require("uuid");
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./public/avatars");
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 const signup = async (req, res) => {
   console.log(req.body);
@@ -39,22 +51,91 @@ const login = async (req, res) => {
 
 const checkJwt = (req, res, next) => {
   const token = req.headers.authorization.split(" ")[1];
+  if (token == "null") {
+    req.payload = "";
+    next();
+    return;
+  }
 
   jwt.verify(token, "secretkey", (err, decoded) => {
     if (err) {
-      res.status(403).send("token not valid");
+      return res.status(403).send("token not valid");
     } else {
       req.payload = decoded;
-      console.log(decoded);
     }
   });
 
   next();
 };
 
-const userProfile = async (req, res) => {
-  const [user] = await knex("users").where({ id: req.params.userId });
-  res.json(user);
+const autoLogin = async (req, res) => {
+  if (!req.payload.id) {
+    res.status(403).send("Token invalid");
+  }
+
+  const [user] = await knex("users").where({ id: req.payload.id });
+
+  res.json({
+    user: user,
+  });
 };
 
-module.exports = { signup, login, checkJwt, userProfile };
+const userProfile = async (req, res) => {
+  let isThatUser = false;
+  const data = await knex
+    .select("users.*", "items.*", "items.id as item_id")
+    .from("users")
+    .leftJoin("items", "users.id", "items.user_id")
+    .where("users.id", req.params.userId);
+  // console.log(data);y
+
+  const user = data[0];
+  if (user.item_id) {
+    const items_posted = data.map((item) => {
+      return {
+        item_name: item.item_name,
+        quantity: item.quantity,
+        price: item.price,
+        images: item.images,
+        id: item.id,
+        user_id: item.user_id,
+      };
+    });
+    user.items_posted = items_posted;
+  }
+  user.id = req.params.userId;
+
+  if (!req.payload) {
+    isThatUser = false;
+  } else if (req.payload.id === req.params.userId) {
+    isThatUser = true;
+  }
+  res.json({
+    isThatUser,
+    user: user,
+  });
+};
+
+const updateProfile = async (req, res) => {
+  // if (!req.payload.id || req.payload.id !== req.params.userId) {
+  //   res.status(403).send("Unauthorized token");
+  //   return;
+  // }
+  const newProfile = {
+    avatar: req.file.path.slice(15),
+  };
+  const data = await knex("users")
+    .where("id", req.params.userId)
+    .update(newProfile);
+  res.status(200).send("Updated");
+};
+
+module.exports = {
+  signup,
+  login,
+  checkJwt,
+  userProfile,
+  autoLogin,
+  updateProfile,
+  upload,
+};
