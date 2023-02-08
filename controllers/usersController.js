@@ -87,7 +87,7 @@ const userProfile = async (req, res) => {
     .from("users")
     .leftJoin("items", "users.id", "items.user_id")
     .where("users.id", req.params.userId);
-  // console.log(data);y
+  // console.log(data);
 
   const user = data[0];
   if (user.item_id) {
@@ -99,6 +99,7 @@ const userProfile = async (req, res) => {
         images: item.images,
         id: item.id,
         user_id: item.user_id,
+        username: item.username,
       };
     });
     user.items_posted = items_posted;

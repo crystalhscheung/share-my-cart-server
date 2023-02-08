@@ -22,9 +22,26 @@ exports.up = function (knex) {
         .references("users.id")
         .onUpdate("CASCADE")
         .onDelete("CASCADE");
+    })
+    .createTable("shopping_carts", (table) => {
+      table.increments("id").primary();
+      table
+        .uuid("user_id")
+        .references("users.id")
+        .onUpdate("CASCADE")
+        .onDelete("CASCADE");
+      table
+        .uuid("item_id")
+        .references("items.id")
+        .onUpdate("CASCADE")
+        .onDelete("CASCADE");
+      table.integer("quantity").unsigned().defaultTo(1);
     });
 };
 
 exports.down = function (knex) {
-  return knex.schema.dropTable("items").dropTable("users");
+  return knex.schema
+    .dropTable("shopping_carts")
+    .dropTable("items")
+    .dropTable("users");
 };
