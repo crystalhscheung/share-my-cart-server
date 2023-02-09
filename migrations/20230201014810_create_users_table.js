@@ -4,8 +4,9 @@ exports.up = function (knex) {
       table.uuid("id").primary();
       table.string("username").notNullable().unique();
       table.string("email").notNullable().unique();
-      table.string("password").notNullable();
+      table.string("password");
       table.string("avatar");
+      table.boolean("is_login_with_google").defaultTo(false);
     })
     .createTable("items", (table) => {
       table.uuid("id").primary();

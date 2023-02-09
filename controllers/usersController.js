@@ -131,6 +131,29 @@ const updateProfile = async (req, res) => {
   res.status(200).send("Updated");
 };
 
+const loginWithGoogle = async (req, res) => {
+  const { email, username, avatar, is_login_with_google } = req.body;
+
+  const newUser = {
+    email,
+    username,
+    avatar,
+    is_login_with_google,
+    id: uuid(),
+  };
+
+  const user = await knex("users").where({ username }).first();
+
+  if (user && is_login_with_google) {
+    const token = jwt.sign({ id: user.id }, "secretkey");
+    res.json({ token: token });
+  } else {
+    await knex("users").insert(newUser);
+    const token = jwt.sign({ id: newUser.id }, "secretkey");
+    res.json({ token: token });
+  }
+};
+
 module.exports = {
   signup,
   login,
@@ -139,4 +162,5 @@ module.exports = {
   autoLogin,
   updateProfile,
   upload,
+  loginWithGoogle,
 };
