@@ -10,5 +10,6 @@ router.patch(
   usersController.upload.single("avatar"),
   usersController.updateProfile
 );
+router.route("/google").post(usersController.loginWithGoogle);
 
 module.exports = router;
