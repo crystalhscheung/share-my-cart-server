@@ -21,14 +21,38 @@ const checkJwt = (req, res, next) => {
 };
 
 const addItemToCart = async (req, res) => {
-  // console.log("userid", req.payload.id);
-  // console.log("itemid", req.params.itemId);
-  const data = await knex("shopping_carts").insert({
+  if (!req.payload.id) {
+    return;
+  }
+
+  const [addedItem] = await knex("shopping_carts").where({
     item_id: req.params.itemId,
     user_id: req.payload.id,
   });
-  // console.log(data);
-  res.status(201).send("Added to your shopping cart");
+
+  if (addedItem) {
+    const [item] = await knex("items").where({ id: addedItem.item_id });
+    if (+item.quantity - +addedItem.quantity >= 1) {
+      const newQuantity = +addedItem.quantity + 1;
+      const data = await knex("shopping_carts")
+        .where({
+          item_id: req.params.itemId,
+          user_id: req.payload.id,
+        })
+        .update({
+          quantity: newQuantity,
+        });
+      // console.log(data);
+    }
+    res.status(201).send("Added to your shopping cart");
+  } else {
+    const data = await knex("shopping_carts").insert({
+      item_id: req.params.itemId,
+      user_id: req.payload.id,
+    });
+    // console.log(data);
+    res.status(201).send("Added to your shopping cart");
+  }
 };
 
 const getItemInCart = async (req, res) => {
