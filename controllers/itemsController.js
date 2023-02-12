@@ -34,14 +34,23 @@ const checkJwt = (req, res, next) => {
 };
 
 const searchItem = async (req, res) => {
-  const query = req.query.search;
-  const itemList = await knex
-    .from("items")
-    .select("items.*", "users.username as username")
-    .where("item_name", "like", `%${query}%`)
-    .join("users", "users.id", "items.user_id");
-
-  res.status(200).json(itemList);
+  if (req.query.search) {
+    const query = req.query.search;
+    const itemList = await knex
+      .from("items")
+      .select("items.*", "users.username as username")
+      .where("item_name", "like", `%${query}%`)
+      .join("users", "users.id", "items.user_id");
+    res.status(200).json(itemList);
+  } else if (req.query.category) {
+    const query = req.query.category;
+    const itemList = await knex
+      .from("items")
+      .select("items.*", "users.username as username")
+      .where("items.category", query.split("-").join(" "))
+      .join("users", "users.id", "items.user_id");
+    res.status(200).json(itemList);
+  }
 };
 
 const getOneItem = async (req, res) => {
@@ -86,15 +95,21 @@ const updateItem = async (req, res) => {
 };
 
 const deleteItem = async (req, res) => {
-  console.log(req.payload.id);
-  console.log(req.params);
-
   const item = await knex("items").where({ id: req.params.itemId });
   if (item[0].user_id !== req.payload.id) {
     res.status(403).send("Unauthorized delete");
   }
   await knex("items").where({ id: req.params.itemId }).del();
   res.status(204).send("Successfullt deleted item");
+};
+
+const getAllItemImages = async (req, res) => {
+  const data = await knex.select("images", "id").from("items");
+  if (data) {
+    res.status(200).json(data);
+  } else {
+    res.status(404).send("No item image found");
+  }
 };
 
 module.exports = {
@@ -105,4 +120,5 @@ module.exports = {
   upload,
   updateItem,
   deleteItem,
+  getAllItemImages,
 };

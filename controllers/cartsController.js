@@ -42,7 +42,6 @@ const addItemToCart = async (req, res) => {
         .update({
           quantity: newQuantity,
         });
-      // console.log(data);
     }
     res.status(201).send("Added to your shopping cart");
   } else {
@@ -50,7 +49,6 @@ const addItemToCart = async (req, res) => {
       item_id: req.params.itemId,
       user_id: req.payload.id,
     });
-    // console.log(data);
     res.status(201).send("Added to your shopping cart");
   }
 };
@@ -70,9 +68,7 @@ const getItemInCart = async (req, res) => {
     .join("items", "shopping_carts.item_id", "items.id")
     .join("users", "users.id", "items.user_id")
     .where("shopping_carts.user_id", req.payload.id);
-  // console.log(data);
   if (!data.length) {
-    console.log("hi");
     res.json(null);
     return;
   }

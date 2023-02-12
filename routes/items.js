@@ -2,6 +2,7 @@ const router = require("express").Router();
 const itemsController = require("../controllers/itemsController.js");
 
 router.route("/").get(itemsController.searchItem);
+router.route("/images").get(itemsController.getAllItemImages);
 router
   .route("/:itemId")
   .get(itemsController.getOneItem)
@@ -20,4 +21,5 @@ router
     itemsController.upload,
     itemsController.updateItem
   );
+
 module.exports = router;
