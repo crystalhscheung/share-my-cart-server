@@ -16,7 +16,6 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const signup = async (req, res) => {
-  console.log(req.body);
   const { email, username, password } = req.body;
 
   const newUser = {
@@ -87,7 +86,6 @@ const userProfile = async (req, res) => {
     .from("users")
     .leftJoin("items", "users.id", "items.user_id")
     .where("users.id", req.params.userId);
-  // console.log(data);
 
   const user = data[0];
   if (user.item_id) {
@@ -118,13 +116,17 @@ const userProfile = async (req, res) => {
 };
 
 const updateProfile = async (req, res) => {
-  // if (!req.payload.id || req.payload.id !== req.params.userId) {
-  //   res.status(403).send("Unauthorized token");
-  //   return;
-  // }
+  if (!req.payload.id || req.payload.id !== req.params.userId) {
+    res.status(403).send("Unauthorized token");
+    return;
+  }
+
   const newProfile = {
-    avatar: req.file.path.slice(15),
+    bio: req.body.bio,
   };
+  if (req.file) {
+    newProfile.avatar = req.file.path.slice(15);
+  }
   const data = await knex("users")
     .where("id", req.params.userId)
     .update(newProfile);
@@ -140,6 +142,7 @@ const loginWithGoogle = async (req, res) => {
     avatar,
     is_login_with_google,
     id: uuid(),
+    bio: "",
   };
 
   const user = await knex("users").where({ username }).first();

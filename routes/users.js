@@ -7,6 +7,7 @@ router.route("/login").post(usersController.login);
 router.get("/:userId", usersController.checkJwt, usersController.userProfile);
 router.patch(
   "/edit/:userId",
+  usersController.checkJwt,
   usersController.upload.single("avatar"),
   usersController.updateProfile
 );

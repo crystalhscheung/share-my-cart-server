@@ -6,6 +6,7 @@ exports.up = function (knex) {
       table.string("email").notNullable().unique();
       table.string("password");
       table.string("avatar");
+      table.text("bio").defaultTo("");
       table.boolean("is_login_with_google").defaultTo(false);
     })
     .createTable("items", (table) => {
