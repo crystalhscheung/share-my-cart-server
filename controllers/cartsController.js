@@ -22,6 +22,7 @@ const checkJwt = (req, res, next) => {
 
 const addItemToCart = async (req, res) => {
   if (!req.payload.id) {
+    res.status(403).send("Please log in");
     return;
   }
 
@@ -56,6 +57,7 @@ const addItemToCart = async (req, res) => {
 const getItemInCart = async (req, res) => {
   if (!req.payload.id) {
     res.status(403).send("Please log in");
+    return;
   }
   const data = await knex
     .select(
@@ -91,6 +93,10 @@ const getItemInCart = async (req, res) => {
 };
 
 const removeItemFromCart = async (req, res) => {
+  if (!req.payload.id) {
+    res.status(403).send("Please log in");
+    return;
+  }
   const data = await knex("shopping_carts")
     .where({
       item_id: req.params.itemId,
@@ -104,6 +110,10 @@ const removeItemFromCart = async (req, res) => {
 };
 
 const changeItemQuantity = async (req, res) => {
+  if (!req.payload.id) {
+    res.status(403).send("Please log in");
+    return;
+  }
   const data = await knex("shopping_carts")
     .where({
       item_id: req.params.itemId,
