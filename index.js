@@ -16,13 +16,13 @@ app.use("/items", itemRouters);
 app.use("/user", userRouters);
 app.use("/cart", cartRouters);
 
-app.get("/config", (req, res) => {
+app.get("/config", (_req, res) => {
   res.send({
     publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
   });
 });
 
-app.post("/create-payment-intent", async (req, res) => {
+app.post("/create-payment-intent", async (_req, res) => {
   try {
     const paymentIntent = await stripe.paymentIntents.create({
       currency: "EUR",

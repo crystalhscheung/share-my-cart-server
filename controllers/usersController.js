@@ -1,4 +1,3 @@
-const fs = require("fs");
 const knex = require("knex")(require("../knexfile"));
 const { v4: uuid } = require("uuid");
 const jwt = require("jsonwebtoken");
