@@ -103,7 +103,7 @@ const deleteItem = async (req, res) => {
   res.status(204).send("Successfullt deleted item");
 };
 
-const getAllItemImages = async (req, res) => {
+const getAllItemImages = async (_req, res) => {
   const data = await knex.select("images", "id").from("items");
   if (data) {
     res.status(200).json(data);
