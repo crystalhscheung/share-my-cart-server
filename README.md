@@ -14,5 +14,9 @@ Tech stack used:
 # Getting Started
 1. git clone both the server and the client repository to your local machine
 2. on both side run npm install
-3. on server side, run node --watch index.js 
-4. on client side, run npm start
+3. on another terminal, login to your mysql account
+4. create a database called share_my_cart
+5. put your database information in the environment variable template format
+6. on server side terminal, run npx knex migrate:latest and npx knex seed:run
+7. on server side, run node --watch index.js 
+8. on client side, run npm start
