@@ -8,7 +8,7 @@ const storage = multer.diskStorage({
     cb(null, "./public/avatars");
   },
   filename: (req, file, cb) => {
-    cb(null, file.originalname);
+    cb(null, Date.now() + file.originalname);
   },
 });
 
@@ -29,7 +29,7 @@ const signup = async (req, res) => {
     const token = jwt.sign({ id: newUser.id }, "secretkey");
     res.json({ token: token });
   } catch (err) {
-    console.log(err.sqlMessage);
+    res.status(401).send(err.sqlMessage.split("for")[0]);
   }
 };
 
@@ -42,7 +42,7 @@ const login = async (req, res) => {
     res.json({ token: token });
   } else {
     res.status(401).json({
-      error: "Login failed",
+      error: "Incorrect username or password",
     });
   }
 };
