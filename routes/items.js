@@ -1,25 +1,18 @@
 const router = require("express").Router();
 const itemsController = require("../controllers/itemsController.js");
+const authorize = require("../middleware/authorize");
 
 router.route("/").get(itemsController.searchItem);
 router.route("/images").get(itemsController.getAllItemImages);
 router
   .route("/:itemId")
   .get(itemsController.getOneItem)
-  .delete(itemsController.checkJwt, itemsController.deleteItem);
+  .delete(authorize, itemsController.deleteItem);
 router
   .route("/upload")
-  .post(
-    itemsController.checkJwt,
-    itemsController.upload,
-    itemsController.uploadItem
-  );
+  .post(authorize, itemsController.upload, itemsController.uploadItem);
 router
   .route("/edit/:itemId")
-  .patch(
-    itemsController.checkJwt,
-    itemsController.upload,
-    itemsController.updateItem
-  );
+  .patch(authorize, itemsController.upload, itemsController.updateItem);
 
 module.exports = router;

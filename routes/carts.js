@@ -1,12 +1,13 @@
 const router = require("express").Router();
 const cartsController = require("../controllers/cartsController");
+const authorize = require("../middleware/authorize");
 
 router
   .route("/:itemId")
-  .post(cartsController.checkJwt, cartsController.addItemToCart)
-  .delete(cartsController.checkJwt, cartsController.removeItemFromCart)
-  .put(cartsController.checkJwt, cartsController.changeItemQuantity);
+  .post(authorize, cartsController.addItemToCart)
+  .delete(authorize, cartsController.removeItemFromCart)
+  .put(authorize, cartsController.changeItemQuantity);
 
-router.route("/").get(cartsController.checkJwt, cartsController.getItemInCart);
+router.route("/").get(authorize, cartsController.getItemInCart);
 
 module.exports = router;

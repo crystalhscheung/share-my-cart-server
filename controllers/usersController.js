@@ -2,6 +2,7 @@ const knex = require("knex")(require("../knexfile"));
 const { v4: uuid } = require("uuid");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
+require("dotenv").config();
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -26,7 +27,7 @@ const signup = async (req, res) => {
 
   try {
     await knex("users").insert(newUser);
-    const token = jwt.sign({ id: newUser.id }, "secretkey");
+    const token = jwt.sign({ id: newUser.id }, process.env.JWT_KEY);
     res.json({ token: token });
   } catch (err) {
     res.status(401).send(err.sqlMessage.split("for")[0]);
@@ -38,32 +39,13 @@ const login = async (req, res) => {
   const user = await knex("users").where({ username }).first();
 
   if (user?.password === password) {
-    const token = jwt.sign({ id: user.id }, "secretkey");
+    const token = jwt.sign({ id: user.id }, process.env.JWT_KEY);
     res.json({ token: token });
   } else {
     res.status(401).json({
       error: "Incorrect username or password",
     });
   }
-};
-
-const checkJwt = (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
-  if (token == "null") {
-    req.payload = "";
-    next();
-    return;
-  }
-
-  jwt.verify(token, "secretkey", (err, decoded) => {
-    if (err) {
-      return res.status(403).send("token not valid");
-    } else {
-      req.payload = decoded;
-    }
-  });
-
-  next();
 };
 
 const autoLogin = async (req, res) => {
@@ -147,11 +129,11 @@ const loginWithGoogle = async (req, res) => {
   const user = await knex("users").where({ username }).first();
 
   if (user && is_login_with_google) {
-    const token = jwt.sign({ id: user.id }, "secretkey");
+    const token = jwt.sign({ id: user.id }, process.env.JWT_KEY);
     res.json({ token: token });
   } else {
     await knex("users").insert(newUser);
-    const token = jwt.sign({ id: newUser.id }, "secretkey");
+    const token = jwt.sign({ id: newUser.id }, process.env.JWT_KEY);
     res.json({ token: token });
   }
 };
@@ -159,7 +141,6 @@ const loginWithGoogle = async (req, res) => {
 module.exports = {
   signup,
   login,
-  checkJwt,
   userProfile,
   autoLogin,
   updateProfile,

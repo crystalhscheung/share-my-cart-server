@@ -1,6 +1,5 @@
 const { v4: uuid } = require("uuid");
 const knex = require("knex")(require("../knexfile"));
-const jwt = require("jsonwebtoken");
 const multer = require("multer");
 
 const storage = multer.diskStorage({
@@ -13,25 +12,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage }).single("images");
-
-const checkJwt = (req, res, next) => {
-  const token = req.headers.authorization.split(" ")[1];
-  if (token === "null") {
-    req.payload = "";
-    next();
-    return;
-  }
-
-  jwt.verify(token, "secretkey", (err, decoded) => {
-    if (err) {
-      return res.status(403).send("token not valid");
-    } else {
-      req.payload = decoded;
-    }
-  });
-
-  next();
-};
 
 const searchItem = async (req, res) => {
   if (req.query.search) {
@@ -116,7 +96,6 @@ module.exports = {
   searchItem,
   getOneItem,
   uploadItem,
-  checkJwt,
   upload,
   updateItem,
   deleteItem,
